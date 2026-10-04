@@ -1,54 +1,50 @@
 const PHONE = "+966535757650";
 const WA = "966535757650";
 
-const path = location.pathname.replace(/\/+$/, "") || "/";
+const path = window.location.pathname.replace(/\/+$/, "") || "/";
 const isAR = document.documentElement.lang === "ar";
 
 document.body.classList.toggle("rtl", isAR);
-
-/* =========================
-   WhatsApp
-========================= */
 
 function waLink(message) {
   return `https://wa.me/${WA}?text=${encodeURIComponent(message)}`;
 }
 
-document.querySelectorAll("[data-wa]").forEach((a) => {
-  const base =
-    a.getAttribute("data-wa") ||
+/* -------------------------
+   Call + WhatsApp links
+------------------------- */
+
+document.querySelectorAll("[data-wa]").forEach((link) => {
+  const message =
+    link.getAttribute("data-wa-message") ||
     (isAR
       ? "السلام عليكم، أحتاج خدمة من للتبريد والتكييف."
       : "Hello, I need a service from للتبريد والتكييف.");
 
-  a.href = waLink(base);
-  a.target = "_blank";
-  a.rel = "noopener";
+  link.href = waLink(message);
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
 });
 
-/* =========================
-   Phone / Call
-========================= */
-
-document.querySelectorAll("[data-call]").forEach((a) => {
-  a.href = `tel:${PHONE}`;
+document.querySelectorAll("[data-call]").forEach((link) => {
+  link.href = `tel:${PHONE}`;
 });
 
-/* =========================
-   Mobile Menu
-========================= */
+/* -------------------------
+   Mobile navigation
+------------------------- */
 
 const menuBtn = document.querySelector(".mobile-menu");
 const drawer = document.querySelector(".drawer");
 
 if (menuBtn && drawer) {
+  const drawerId = drawer.id || "mobile-navigation";
+  drawer.id = drawerId;
+  menuBtn.setAttribute("aria-controls", drawerId);
+
   const setMenuState = (open) => {
     drawer.classList.toggle("open", open);
-
-    menuBtn.setAttribute(
-      "aria-expanded",
-      String(open)
-    );
+    menuBtn.setAttribute("aria-expanded", String(open));
 
     menuBtn.setAttribute(
       "aria-label",
@@ -65,239 +61,427 @@ if (menuBtn && drawer) {
   setMenuState(false);
 
   menuBtn.addEventListener("click", () => {
-    setMenuState(
-      !drawer.classList.contains("open")
-    );
+    setMenuState(!drawer.classList.contains("open"));
   });
 
-  drawer.querySelectorAll("a").forEach((a) => {
-    a.addEventListener("click", () => {
+  drawer.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setMenuState(false));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (
+      drawer.classList.contains("open") &&
+      !drawer.contains(event.target) &&
+      !menuBtn.contains(event.target)
+    ) {
       setMenuState(false);
-    });
+    }
   });
 }
 
-/* =========================
-   FAQ Accordion
-========================= */
+/* -------------------------
+   FAQ
+------------------------- */
 
-document.querySelectorAll(".faq-q").forEach((btn) => {
-  btn.setAttribute("aria-expanded", "false");
+document.querySelectorAll(".faq-q").forEach((button) => {
+  button.setAttribute("aria-expanded", "false");
 
-  btn.addEventListener("click", () => {
-    const item = btn.closest(".faq-item");
+  button.addEventListener("click", () => {
+    const item = button.closest(".faq-item");
 
     if (!item) return;
 
     const open = item.classList.toggle("open");
 
-    btn.setAttribute(
+    button.setAttribute(
       "aria-expanded",
       String(open)
     );
   });
 });
 
-/* =========================
-   Problem / Service Finder
-========================= */
+/* -------------------------
+   Problem finder
+------------------------- */
 
-document.querySelectorAll("[data-problem]").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const val = btn.dataset.problem || "";
+function getServiceForProblem(value) {
+  const text = String(value || "").toLowerCase();
 
-    const service =
-      document.querySelector("#service");
+  if (
+    /مكيف|مكيفات|تكييف|تنظيف المكيف|تركيب مكيف|غاز|تسريب ماء من المكيف/.test(
+      text
+    ) ||
+    /ac\b|air conditioner|cooling|ac cleaning|ac installation|gas refill|gas leak|ac water leakage/.test(
+      text
+    )
+  ) {
+    return isAR
+      ? "صيانة المكيفات"
+      : "AC repair/service";
+  }
 
-    const details =
-      document.querySelector("#details");
+  if (
+    /ثلاج|refrigerator|fridge/.test(text)
+  ) {
+    return isAR
+      ? "إصلاح الثلاجات"
+      : "Refrigerator repair";
+  }
 
-    if (service) {
-      const serviceMap = [
-        [/مكيف|مكيفات|تكييف|ac/i, "صيانة المكيفات"],
-        [/ثلاج|refrigerator|fridge/i, "إصلاح الثلاجات"],
-        [/غسال|washing/i, "إصلاح الغسالات"],
-        [/عاجل|طوارئ|urgent|emergency/i, "خدمة عاجلة"],
-      ];
+  if (
+    /غسال|washing machine|washer/.test(text)
+  ) {
+    return isAR
+      ? "إصلاح الغسالات"
+      : "Washing machine repair";
+  }
 
-      const mapped = serviceMap.find(
-        ([pattern]) => pattern.test(val)
+  if (
+    /عاجل|طوارئ|urgent|emergency|electrical fault|عطل كهربائي/.test(
+      text
+    )
+  ) {
+    return isAR
+      ? "خدمة عاجلة"
+      : "Urgent service";
+  }
+
+  return "";
+}
+
+function prepareBooking(problem) {
+  const bookingForm =
+    document.querySelector("#bookingForm");
+
+  if (!bookingForm) {
+    const bookingPath = isAR
+      ? "/ar/book/"
+      : "/en/book/";
+
+    const url = new URL(
+      bookingPath,
+      window.location.origin
+    );
+
+    if (problem) {
+      url.searchParams.set(
+        "problem",
+        problem
       );
-
-      const desired = mapped
-        ? mapped[1]
-        : val;
-
-      const option = [
-        ...service.options,
-      ].find(
-        (o) =>
-          o.textContent.trim() === desired ||
-          o.value === desired
-      );
-
-      if (option) {
-        service.value = option.value;
-      }
     }
 
-    if (details) {
-      details.value = details.value
-        ? `${details.value}\n${val}`
-        : val;
-    }
+    window.location.href =
+      url.toString();
 
-    document
-      .querySelector("#booking")
-      ?.scrollIntoView({
-        behavior: "smooth",
-      });
+    return;
+  }
+
+  const service =
+    bookingForm.querySelector("#service");
+
+  const details =
+    bookingForm.querySelector("#details");
+
+  const desiredService =
+    getServiceForProblem(problem);
+
+  if (service && desiredService) {
+    const option = [
+      ...service.options,
+    ].find(
+      (option) =>
+        option.textContent.trim() ===
+          desiredService ||
+        option.value === desiredService
+    );
+
+    if (option) {
+      service.value =
+        option.value;
+    }
+  }
+
+  if (details && problem) {
+    details.value = details.value
+      ? `${details.value}\n${problem}`
+      : problem;
+  }
+
+  bookingForm.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
   });
-});
 
-/* =========================
-   Booking Form
-========================= */
-
-const form =
-  document.querySelector("#bookingForm");
-
-if (form) {
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const data = new FormData(form);
-
-    const name = String(
-      data.get("name") || ""
-    ).trim();
-
-    const service = String(
-      data.get("service") || ""
-    ).trim();
-
-    const area = String(
-      data.get("area") || ""
-    ).trim();
-
-    const preferred = String(
-      data.get("preferred") || ""
-    ).trim();
-
-    const details = String(
-      data.get("details") || ""
-    ).trim();
-
-    const msg = isAR
-      ? [
-          "السلام عليكم، أريد حجز خدمة من للتبريد والتكييف.",
-          `الاسم: ${name}`,
-          `الخدمة: ${service}`,
-          `الحي/الموقع: ${area}`,
-          `الوقت المفضل: ${
-            preferred || "لم يحدد"
-          }`,
-          `التفاصيل: ${
-            details || "لا توجد تفاصيل إضافية"
-          }`,
-        ].join("\n")
-      : [
-          "Hello, I would like to book a service from للتبريد والتكييف.",
-          `Name: ${name}`,
-          `Service: ${service}`,
-          `Area/location: ${area}`,
-          `Preferred time: ${
-            preferred || "Not specified"
-          }`,
-          `Details: ${
-            details || "No additional details"
-          }`,
-        ].join("\n");
-
-    /*
-      encodeURIComponent() happens only once
-      inside waLink(), so WhatsApp line breaks
-      and Arabic text are encoded correctly.
-    */
-
-    window.location.href = waLink(msg);
+  details?.focus({
+    preventScroll: true,
   });
 }
 
-/* =========================
-   Lightbox / Gallery
-========================= */
+document
+  .querySelectorAll("[data-problem]")
+  .forEach((button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        prepareBooking(
+          button.dataset.problem ||
+            button.textContent.trim()
+        );
+      }
+    );
+  });
 
-const lb =
-  document.querySelector(".lightbox");
+/* -------------------------
+   Booking form
+------------------------- */
+
+const form =
+  document.querySelector(
+    "#bookingForm"
+  );
+
+if (form) {
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const problem =
+    params.get("problem");
+
+  if (problem) {
+    const service =
+      form.querySelector("#service");
+
+    const details =
+      form.querySelector("#details");
+
+    const desiredService =
+      getServiceForProblem(problem);
+
+    if (service && desiredService) {
+      const option = [
+        ...service.options,
+      ].find(
+        (option) =>
+          option.textContent.trim() ===
+            desiredService ||
+          option.value === desiredService
+      );
+
+      if (option) {
+        service.value =
+          option.value;
+      }
+    }
+
+    if (
+      details &&
+      !details.value
+    ) {
+      details.value =
+        problem;
+    }
+  }
+
+  form.addEventListener(
+    "submit",
+    (event) => {
+      event.preventDefault();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const data =
+        new FormData(form);
+
+      const name =
+        String(
+          data.get("name") || ""
+        ).trim();
+
+      const service =
+        String(
+          data.get("service") || ""
+        ).trim();
+
+      const area =
+        String(
+          data.get("area") || ""
+        ).trim();
+
+      const preferred =
+        String(
+          data.get("preferred") || ""
+        ).trim();
+
+      const details =
+        String(
+          data.get("details") || ""
+        ).trim();
+
+      const message = isAR
+        ? [
+            "السلام عليكم، أريد حجز خدمة من للتبريد والتكييف.",
+            `الاسم: ${name}`,
+            `الخدمة: ${service}`,
+            `الحي/الموقع: ${area}`,
+            `الوقت المفضل: ${
+              preferred || "لم يحدد"
+            }`,
+            `التفاصيل: ${
+              details ||
+              "لا توجد تفاصيل إضافية"
+            }`,
+          ].join("\n")
+        : [
+            "Hello, I would like to book a service from للتبريد والتكييف.",
+            `Name: ${name}`,
+            `Service: ${service}`,
+            `Area/location: ${area}`,
+            `Preferred time: ${
+              preferred ||
+              "Not specified"
+            }`,
+            `Details: ${
+              details ||
+              "No additional details"
+            }`,
+          ].join("\n");
+
+      window.location.href =
+        waLink(message);
+    }
+  );
+}
+
+/* -------------------------
+   Gallery lightbox
+------------------------- */
+
+const lightbox =
+  document.querySelector(
+    ".lightbox"
+  );
 
 document
   .querySelectorAll("[data-lightbox]")
-  .forEach((img) => {
-    img.addEventListener("click", () => {
-      if (!lb) return;
+  .forEach((image) => {
+    image.setAttribute(
+      "tabindex",
+      "0"
+    );
+
+    image.setAttribute(
+      "role",
+      "button"
+    );
+
+    image.setAttribute(
+      "aria-label",
+      isAR
+        ? "فتح الصورة بالحجم الكامل"
+        : "Open image full size"
+    );
+
+    const openLightbox = () => {
+      if (!lightbox) return;
 
       const target =
-        lb.querySelector("img");
+        lightbox.querySelector(
+          "img"
+        );
 
       if (!target) return;
 
       target.src =
-        img.currentSrc || img.src;
+        image.currentSrc ||
+        image.src;
 
-      target.alt = img.alt || "";
+      target.alt =
+        image.alt || "";
 
-      lb.classList.add("open");
+      lightbox.classList.add(
+        "open"
+      );
 
       document.body.style.overflow =
         "hidden";
-    });
+    };
+
+    image.addEventListener(
+      "click",
+      openLightbox
+    );
+
+    image.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+          openLightbox();
+        }
+      }
+    );
   });
 
-if (lb) {
+if (lightbox) {
   const closeLightbox = () => {
-    lb.classList.remove("open");
+    lightbox.classList.remove(
+      "open"
+    );
 
     document.body.style.overflow =
       "";
   };
 
-  lb.addEventListener("click", (e) => {
-    if (
-      e.target === lb ||
-      e.target.classList.contains(
-        "close-light"
-      )
-    ) {
-      closeLightbox();
+  lightbox.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target === lightbox ||
+        event.target.classList.contains(
+          "close-light"
+        )
+      ) {
+        closeLightbox();
+      }
     }
-  });
+  );
 
   document.addEventListener(
     "keydown",
-    (e) => {
-      if (e.key === "Escape") {
+    (event) => {
+      if (event.key === "Escape") {
         closeLightbox();
       }
     }
   );
 }
 
-/* =========================
-   Current Year
-========================= */
+/* -------------------------
+   Current year
+------------------------- */
 
 const year =
-  document.querySelector("[data-year]");
+  document.querySelector(
+    "[data-year]"
+  );
 
 if (year) {
-  year.textContent =
-    String(new Date().getFullYear());
+  year.textContent = String(
+    new Date().getFullYear()
+  );
 }
 
-/* =========================
-   Arabic / English Switch
-========================= */
+/* -------------------------
+   Arabic / English switch
+------------------------- */
 
 const langLink =
   document.querySelector(
@@ -307,64 +491,23 @@ const langLink =
 if (langLink) {
   let target;
 
-  /*
-    Root:
-    /
-    goes to Arabic homepage.
-  */
-
   if (path === "/") {
     target = "/ar/";
-  }
-
-  /*
-    Arabic page:
-    /ar/
-    /ar/services/
-    /ar/services/ac-repair/
-    
-    becomes:
-    /en/
-    /en/services/
-    /en/services/ac-repair/
-  */
-
-  else if (
+  } else if (
     path === "/ar" ||
     path.startsWith("/ar/")
   ) {
     target =
       "/en" +
       (path.slice(3) || "/");
-  }
-
-  /*
-    English page:
-    /en/
-    /en/services/
-    /en/services/ac-repair/
-    
-    becomes:
-    /ar/
-    /ar/services/
-    /ar/services/ac-repair/
-  */
-
-  else if (
+  } else if (
     path === "/en" ||
     path.startsWith("/en/")
   ) {
     target =
       "/ar" +
       (path.slice(3) || "/");
-  }
-
-  /*
-    Any other page:
-    fallback to opposite language homepage.
-  */
-
-  else {
+  } else {
     target = isAR
       ? "/en/"
       : "/ar/";
