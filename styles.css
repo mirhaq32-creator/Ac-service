@@ -56,6 +56,10 @@ button{
   cursor:pointer;
 }
 
+/* =========================
+   CONTAINER
+========================= */
+
 .container{
   width:min(
     var(--max),
@@ -65,7 +69,7 @@ button{
 }
 
 /* =========================
-   Accessibility
+   ACCESSIBILITY
 ========================= */
 
 .skip{
@@ -84,7 +88,7 @@ button{
 }
 
 /* =========================
-   Top Bar
+   TOP BAR
 ========================= */
 
 .topbar{
@@ -107,7 +111,7 @@ button{
 }
 
 /* =========================
-   Header / Navigation
+   HEADER / NAVIGATION
 ========================= */
 
 .header-wrap{
@@ -189,7 +193,7 @@ button{
 }
 
 /* =========================
-   Buttons
+   BUTTONS
 ========================= */
 
 .btn{
@@ -237,7 +241,7 @@ button{
 }
 
 /* =========================
-   Mobile Menu
+   MOBILE MENU
 ========================= */
 
 .mobile-menu{
@@ -277,7 +281,7 @@ button{
 }
 
 /* =========================
-   Hero
+   HERO
 ========================= */
 
 .hero{
@@ -371,7 +375,7 @@ h1 em{
 }
 
 /* =========================
-   Hero Images
+   HERO IMAGES
 ========================= */
 
 .hero-media{
@@ -449,7 +453,7 @@ h1 em{
 }
 
 /* =========================
-   Sections
+   SECTIONS
 ========================= */
 
 .section{
@@ -486,7 +490,7 @@ h1 em{
 }
 
 /* =========================
-   Finder
+   FINDER
 ========================= */
 
 .finder{
@@ -524,7 +528,7 @@ h1 em{
 }
 
 /* =========================
-   Service Cards
+   SERVICE CARDS
 ========================= */
 
 .service-grid{
@@ -570,7 +574,7 @@ h1 em{
 }
 
 /* =========================
-   Dark Band
+   DARK BAND
 ========================= */
 
 .dark-band{
@@ -621,7 +625,7 @@ h1 em{
 }
 
 /* =========================
-   Steps
+   STEPS
 ========================= */
 
 .steps{
@@ -679,7 +683,7 @@ h1 em{
 }
 
 /* =========================
-   Gallery
+   GALLERY
 ========================= */
 
 .gallery{
@@ -707,7 +711,7 @@ h1 em{
 }
 
 /* =========================
-   Areas
+   AREAS
 ========================= */
 
 .areas{
@@ -822,7 +826,7 @@ h1 em{
 }
 
 /* =========================
-   Final CTA
+   FINAL CTA
 ========================= */
 
 .final-cta{
@@ -859,7 +863,7 @@ h1 em{
 }
 
 /* =========================
-   Footer
+   FOOTER
 ========================= */
 
 .footer{
@@ -908,7 +912,7 @@ h1 em{
 }
 
 /* =========================
-   Bottom Mobile Bar
+   MOBILE BOTTOM BAR
 ========================= */
 
 .bottom-bar{
@@ -916,7 +920,7 @@ h1 em{
 }
 
 /* =========================
-   Page Hero
+   PAGE HERO
 ========================= */
 
 .page-hero{
@@ -932,7 +936,7 @@ h1 em{
 }
 
 /* =========================
-   Detail Pages
+   DETAIL PAGES
 ========================= */
 
 .detail{
@@ -995,7 +999,7 @@ h1 em{
 }
 
 /* =========================
-   Forms
+   FORMS
 ========================= */
 
 .form{
@@ -1058,7 +1062,7 @@ h1 em{
 }
 
 /* =========================
-   Toast
+   TOAST
 ========================= */
 
 .toast{
@@ -1079,7 +1083,7 @@ h1 em{
 }
 
 /* =========================
-   Lightbox
+   LIGHTBOX
 ========================= */
 
 .lightbox{
@@ -1133,9 +1137,7 @@ h1 em{
   direction:rtl;
 }
 
-/*
-  Fixed RTL image chip positions.
-*/
+/* RTL image chips */
 
 [dir=rtl] .chip.one{
   right:auto;
@@ -1148,7 +1150,7 @@ h1 em{
 }
 
 /* =========================
-   Tablet
+   TABLET
 ========================= */
 
 @media(max-width:1050px){
@@ -1208,7 +1210,7 @@ h1 em{
 }
 
 /* =========================
-   Mobile
+   MOBILE
 ========================= */
 
 @media(max-width:700px){
@@ -1306,9 +1308,7 @@ h1 em{
     bottom:22px;
   }
 
-  /*
-    Fixed RTL mobile positions.
-  */
+  /* Fixed RTL mobile positions */
 
   [dir=rtl] .chip.one{
     right:auto;
@@ -1403,9 +1403,7 @@ h1 em{
     grid-column:1/-1;
   }
 
-  /*
-    Mobile fixed action bar.
-  */
+  /* Mobile fixed action bar */
 
   .bottom-bar{
     position:fixed;
