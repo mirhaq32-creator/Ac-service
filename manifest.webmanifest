@@ -1,0 +1,28 @@
+{
+  "name": "للتبريد والتكييف",
+  "short_name": "للتبريد والتكييف",
+  "lang": "ar",
+  "dir": "rtl",
+  "display": "standalone",
+  "start_url": "/ar/",
+  "theme_color": "#d93a17",
+  "background_color": "#fffbf7",
+  "icons": [
+    {
+      "src": "/assets/logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Call",
+      "url": "tel:+966535757650"
+    },
+    {
+      "name": "Book Service",
+      "url": "/ar/book/"
+    }
+  ]
+}

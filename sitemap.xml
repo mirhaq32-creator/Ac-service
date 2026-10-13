@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/ar/</loc></url>
+  <url><loc>https://example.com/en/</loc></url>
+  <url><loc>https://example.com/ar/services/</loc></url>
+  <url><loc>https://example.com/en/services/</loc></url>
+  <url><loc>https://example.com/ar/services/ac-repair/</loc></url>
+  <url><loc>https://example.com/en/services/ac-repair/</loc></url>
+  <url><loc>https://example.com/ar/services/refrigerator-repair/</loc></url>
+  <url><loc>https://example.com/en/services/refrigerator-repair/</loc></url>
+  <url><loc>https://example.com/ar/services/washing-machine-repair/</loc></url>
+  <url><loc>https://example.com/en/services/washing-machine-repair/</loc></url>
+  <url><loc>https://example.com/ar/services/emergency/</loc></url>
+  <url><loc>https://example.com/en/services/emergency/</loc></url>
+  <url><loc>https://example.com/ar/work/</loc></url>
+  <url><loc>https://example.com/en/work/</loc></url>
+  <url><loc>https://example.com/ar/areas/</loc></url>
+  <url><loc>https://example.com/en/areas/</loc></url>
+  <url><loc>https://example.com/ar/about/</loc></url>
+  <url><loc>https://example.com/en/about/</loc></url>
+  <url><loc>https://example.com/ar/contact/</loc></url>
+  <url><loc>https://example.com/en/contact/</loc></url>
+  <url><loc>https://example.com/ar/book/</loc></url>
+  <url><loc>https://example.com/en/book/</loc></url>
+</urlset>
