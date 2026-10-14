@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // IMPORTANT: if your existing Cloudflare Worker has a different name,
+  // put that exact name here AND in the self-reference binding below.
+  "name": "ac-service",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "ac-service"
+    }
+  ],
+  "observability": { "enabled": true }
+}

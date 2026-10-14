@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------
+   Design tokens — PRD §4.2/§4.4 (light theme only; no dark mode)
+--------------------------------------------------------------- */
+@theme {
+  /* Colors */
+  --color-bg: #fbfdff; /* page background (cool white) */
+  --color-surface: #eef4fb; /* cards / bands */
+  --color-surface-2: #e2ecf8; /* inputs, chips */
+  --color-line: #d6e2f1; /* borders */
+  --color-ink: #0b1f4b; /* headings, dark bands */
+  --color-ink-2: #2b3d63; /* body text */
+  --color-muted: #5a6b88; /* secondary text */
+  --color-accent: #1456c4; /* primary buttons/links */
+  --color-accent-bright: #2bbbe0; /* glows, decorative strokes, icons on dark */
+  --color-accent-hover: #0f43a0; /* hover/pressed */
+  --color-accent-tint: #e2eeff; /* soft accent backgrounds */
+  --color-cool: #eaf5fb; /* end-of-scroll cool tint */
+  --color-wa: #25d366; /* WhatsApp icon only */
+  --color-success: #1e8e5a;
+  --color-warn: #b7791f;
+  --color-danger: #b42318;
+
+  /* Shadows */
+  --shadow-s1: 0 1px 2px rgba(11, 31, 75, 0.06);
+  --shadow-s2: 0 8px 24px -8px rgba(11, 31, 75, 0.14);
+  --shadow-s3: 0 24px 60px -20px rgba(11, 31, 75, 0.25);
+  --shadow-glow: 0 10px 30px -8px rgba(20, 86, 196, 0.45);
+
+  /* Radii (10/16/24 map to Tailwind defaults; hero = 32) */
+  --radius-hero: 32px;
+
+  /* Motion easings — PRD §6.2 */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Font utilities resolve through per-language slots set by the root layouts */
+@theme inline {
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-heading: var(--font-display), var(--font-body), system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    /* Reading-direction multiplier (Appendix B): 1 = LTR, -1 = RTL.
+       Multiply into translateX for directional slide animations. */
+    --dir: 1;
+
+    /* Heat→Cool climate scroll variable (PRD A12): 0 = warm top, 1 = cool bottom. */
+    --climate: 0;
+
+    /* Font slots — English defaults; Arabic pages override below.
+       The layouts apply only the next/font variables the language needs. */
+    --font-display: var(--font-en-display), system-ui, sans-serif;
+    --font-body: var(--font-en-body), system-ui, sans-serif;
+  }
+
+  html[dir="rtl"] {
+    --dir: -1;
+  }
+
+  html[lang="ar"] {
+    --font-display: var(--font-ar), system-ui, sans-serif;
+    --font-body: var(--font-ar), system-ui, sans-serif;
+    /* PRD §4.3: no faux bold/italics on Arabic */
+    font-synthesis: none;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink-2);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  /* Arabic body needs more air (PRD §4.3) */
+  html[lang="ar"] body {
+    font-size: 18px;
+    line-height: 1.9;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-ink);
+  }
+
+  h1 {
+    font-size: clamp(44px, 7vw, 88px);
+    font-weight: 800;
+    line-height: 0.95;
+  }
+
+  html[lang="ar"] h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  /* PRD §4.3: no letter-spacing on Arabic */
+  html[lang="ar"],
+  html[lang="ar"] * {
+    letter-spacing: 0;
+  }
+
+  /* Focus ring — PRD §4.5: 2px ink outline + 2px offset on every
+     interactive element */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion — PRD §6.4 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
