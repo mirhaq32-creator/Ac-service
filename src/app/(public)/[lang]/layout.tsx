@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 
 import { getDir, isLang } from "@/i18n/config";
@@ -35,17 +36,24 @@ type Props = {
 };
 
 /**
- * Public root layout (multiple-root-layout pattern): owns <html lang dir>
- * for the /ar (RTL) and /en (LTR) trees. Only the font variables the
- * language needs are applied, so Arabic pages never download the Latin
- * display fonts and vice versa (PRD §4.3).
+ * Public root layout for Arabic (RTL) and English (LTR) pages.
+ * Google Ads tag is loaded on both language routes.
  */
-export default async function PublicRootLayout({ children, params }: Props) {
+export default async function PublicRootLayout({
+  children,
+  params,
+}: Props) {
   const { lang } = await params;
+
   if (!isLang(lang)) notFound();
 
-  const [dict, content] = await Promise.all([getDictionary(lang), getSiteContent()]);
+  const [dict, content] = await Promise.all([
+    getDictionary(lang),
+    getSiteContent(),
+  ]);
+
   const dir = getDir(lang);
+
   const fontVars =
     lang === "ar"
       ? plexArabic.variable
@@ -56,20 +64,42 @@ export default async function PublicRootLayout({ children, params }: Props) {
     name: c.name[lang],
     subs: content.subServices
       .filter((s) => s.categorySlug === c.slug)
-      .map((s) => ({ slug: s.slug, name: s.name[lang] })),
+      .map((s) => ({
+        slug: s.slug,
+        name: s.name[lang],
+      })),
   }));
 
   return (
     <html lang={lang} dir={dir} className={`${fontVars} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        {/* Google Ads Global Site Tag */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18515639131"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-ads-tag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'AW-18515639131');
+          `}
+        </Script>
+
         <JsonLd data={localBusinessJsonLd(getSiteUrl())} />
+
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:absolute focus:start-0 focus:top-0 focus:z-50 focus:bg-ink focus:px-4 focus:py-3 focus:text-bg"
         >
           {dict.a11y.skipToContent}
         </a>
+
         <IntroCurtain />
+
         <Header
           lang={lang}
           dict={dict}
@@ -77,6 +107,7 @@ export default async function PublicRootLayout({ children, params }: Props) {
           showBlogs={content.blogs.length > 0}
           showWork={content.photos.length > 0}
         />
+
         <MotionProvider>
           <main
             id="content"
@@ -84,9 +115,12 @@ export default async function PublicRootLayout({ children, params }: Props) {
           >
             {children}
           </main>
+
           <MobileBottomBar lang={lang} dict={dict} />
         </MotionProvider>
+
         <Footer lang={lang} dict={dict} />
+
         <ServiceWorkerRegister />
         <InstallPrompt lang={lang} />
       </body>
