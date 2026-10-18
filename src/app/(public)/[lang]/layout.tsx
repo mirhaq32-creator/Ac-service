@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 
 import { getDir, isLang } from "@/i18n/config";
@@ -62,6 +63,20 @@ export default async function PublicRootLayout({ children, params }: Props) {
   return (
     <html lang={lang} dir={dir} className={`${fontVars} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        {/* Google Ads tag: shared across Arabic and English public pages. */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18515639131"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-tag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'AW-18515639131');
+          `}
+        </Script>
         <JsonLd data={localBusinessJsonLd(getSiteUrl())} />
         <a
           href="#content"

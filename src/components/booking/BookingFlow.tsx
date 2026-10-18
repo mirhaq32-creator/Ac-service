@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronLeft, MapPin, Paperclip } from "lucide-react";
+import { Check, ChevronLeft, MapPin } from "lucide-react";
 
 import { BUSINESS } from "@/lib/business";
 import type { Lang } from "@/i18n/config";
@@ -27,7 +27,6 @@ type Answers = {
   time: string;
   name: string;
   phone: string;
-  photoNote: boolean;
   notes: string;
 };
 
@@ -43,25 +42,40 @@ const EMPTY: Answers = {
   time: "",
   name: "",
   phone: "",
-  photoNote: false,
   notes: "",
 };
 
 const STORAGE_KEY = "booking-draft";
 
-function normalizeSaudiPhone(raw: string): string | null {
-  const digits = raw.replace(/[^\d+]/g, "");
-  if (/^\+9665\d{8}$/.test(digits)) return digits;
-  if (/^9665\d{8}$/.test(digits)) return `+${digits}`;
+/** Arabic-Indic / Persian digits → ASCII, so Arabic keyboards work. */
+function toAsciiDigits(input: string): string {
+  return input
+    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x06f0));
+}
+
+/**
+ * Accepts Saudi mobiles in any common spelling (05…, 5…, 9665…, +9665…,
+ * 00966…, +966 05…) and any other international number (e.g. +92 3xx…),
+ * plus Pakistani local 03xx… numbers. Returns a clean +CC… string or null.
+ */
+function normalizePhone(raw: string): string | null {
+  const stripped = toAsciiDigits(raw).replace(/[\s\-().]/g, "");
+  let digits = stripped.replace(/[^\d+]/g, "");
+  if (digits.startsWith("00")) digits = `+${digits.slice(2)}`;
+  if (/^\+?9660?5\d{8}$/.test(digits)) return `+966${digits.replace(/^\+?9660?/, "")}`;
   if (/^05\d{8}$/.test(digits)) return `+966${digits.slice(1)}`;
   if (/^5\d{8}$/.test(digits)) return `+966${digits}`;
+  if (/^03\d{9}$/.test(digits)) return `+92${digits.slice(1)}`;
+  if (/^\+\d{8,15}$/.test(digits)) return digits;
   return null;
 }
 
 /**
- * Booking flow (PRD §8): 6 screens + review → builds a wa.me message in
- * the browser and opens WhatsApp. NOTHING is stored or transmitted to any
- * server (D1) — state lives in sessionStorage only, cleared after send.
+ * Booking flow (PRD §8): 6 screens + review → builds a bilingual
+ * (Arabic + Roman Urdu) wa.me message in the browser and opens WhatsApp.
+ * NOTHING is stored or transmitted to any server (D1) — state lives in
+ * sessionStorage only, cleared after send. No photo upload (removed).
  */
 export function BookingFlow({
   lang,
@@ -128,7 +142,7 @@ export function BookingFlow({
     (s) => s.categorySlug === answers.service && s.slug === answers.sub
   )?.name;
 
-  const phoneOk = answers.phone === "" ? false : normalizeSaudiPhone(answers.phone);
+  const phoneOk = answers.phone.trim() === "" ? null : normalizePhone(answers.phone);
   const canNext =
     (step === 0 && answers.service !== "") ||
     step === 1 ||
@@ -145,36 +159,29 @@ export function BookingFlow({
   }
 
   function buildMessage(): { text: string; wa: string } {
-    const isAr = lang === "ar";
+    // Always Arabic + Roman Urdu, whatever language the site is shown in.
     const L: string[] = [];
-    L.push(isAr ? "السلام عليكم، أرغب بحجز خدمة." : "Hello, I'd like to book a service.");
-    L.push(`${isAr ? "الخدمة" : "Service"}: ${service?.name ?? ""}`);
-    if (subName) L.push(`${isAr ? "الخدمة الفرعية" : "Sub-service"}: ${subName}`);
-    if (answers.problem) L.push(`${isAr ? "المشكلة" : "Problem"}: ${answers.problem}`);
-    L.push(`${isAr ? "الاسم" : "Name"}: ${answers.name}`);
-    L.push(`${isAr ? "الجوال" : "Phone"}: ${phoneOk ?? answers.phone}`);
-    const loc = [
-      answers.locationText,
-      answers.geoUrl,
-    ]
-      .filter(Boolean)
-      .join(isAr ? " — " : " — ");
-    if (loc) L.push(`${isAr ? "الموقع" : "Location"}: ${loc}`);
+    L.push("السلام عليكم 👋");
+    L.push("أرغب بحجز خدمة من فضلكم.");
+    L.push("Assalam o Alaikum! Mujhe service book karwani hai.");
+    L.push("━━━━━━━━━━━━");
+    L.push(`🔧 الخدمة / Service: ${service?.name ?? ""}`);
+    if (subName) L.push(`🛠 النوع / Type: ${subName}`);
+    if (answers.problem.trim()) L.push(`❗ المشكلة / Masla: ${answers.problem.trim()}`);
+    L.push(`👤 الاسم / Naam: ${answers.name.trim()}`);
+    L.push(`📞 الجوال / Phone: ${phoneOk ?? answers.phone.trim()}`);
+    const loc = [answers.locationText.trim(), answers.geoUrl].filter(Boolean).join(" — ");
+    if (loc) L.push(`📍 الموقع / Location: ${loc}`);
     const time =
       answers.timeWhen === "asap"
-        ? isAr
-          ? "في أقرب وقت"
-          : "As soon as possible"
+        ? "في أقرب وقت / Jaldi se jaldi"
         : answers.timeWhen === "today"
-          ? isAr
-            ? "اليوم"
-            : "Today"
+          ? "اليوم / Aaj"
           : `${answers.date} ${answers.time}`;
-    L.push(`${isAr ? "الوقت المناسب" : "Preferred time"}: ${time}`);
-    if (answers.photoNote)
-      L.push(isAr ? "سأرسل صورة/فيديو للمشكلة في واتساب." : "I'll send a photo/video in WhatsApp.");
-    if (answers.notes) L.push(`${isAr ? "ملاحظات" : "Notes"}: ${answers.notes}`);
-    L.push(isAr ? "(أُرسلت من الموقع)" : "(Sent from the website)");
+    L.push(`🕐 الوقت المناسب / Waqt: ${time}`);
+    if (answers.notes.trim()) L.push(`📝 ملاحظات / Notes: ${answers.notes.trim()}`);
+    L.push("━━━━━━━━━━━━");
+    L.push("(أُرسلت من الموقع / Website se bheja gaya)");
     const text = L.join("\n");
     return { text, wa: `https://wa.me/${BUSINESS.whatsappNumber}?text=${encodeURIComponent(text)}` };
   }
@@ -203,10 +210,6 @@ export function BookingFlow({
           {dict.book.success.title}
         </h2>
         <p className="mt-2 text-ink-2">{dict.book.success.body}</p>
-        <p className="mt-3 flex items-center justify-center gap-2 text-sm text-muted">
-          <Paperclip className="size-4" aria-hidden="true" />
-          {dict.book.success.attachReminder}
-        </p>
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <a
             href={`https://wa.me/${BUSINESS.whatsappNumber}?text=${encodeURIComponent(text)}`}
@@ -507,15 +510,6 @@ export function BookingFlow({
               <p className="mt-1 text-sm text-danger">{dict.book.details.invalidPhone}</p>
             ) : null}
           </div>
-          <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-line bg-bg px-4 text-sm font-medium text-ink">
-            <input
-              type="checkbox"
-              checked={answers.photoNote}
-              onChange={(e) => setAnswers((a) => ({ ...a, photoNote: e.target.checked }))}
-              className="size-5 accent-[#1456c4]"
-            />
-            {dict.book.details.photo}
-          </label>
           <div>
             <label htmlFor="bk-notes" className="text-sm font-semibold text-muted">
               {dict.book.details.notes}
@@ -566,7 +560,27 @@ export function BookingFlow({
                 </div>
               ))}
           </dl>
+          <h3 className="mt-6 text-sm font-semibold text-muted">
+            {dict.book.review.previewTitle}
+          </h3>
+          <pre
+            dir="auto"
+            className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-2xl border border-line bg-surface p-4 font-sans text-sm leading-relaxed text-ink-2"
+          >
+            {text}
+          </pre>
         </div>
+      ) : null}
+
+      {touched && !canNext && step === 0 ? (
+        <p className="mt-4 text-sm text-danger" role="alert">
+          {dict.book.chooseService}
+        </p>
+      ) : null}
+      {touched && !canNext && step === 3 ? (
+        <p className="mt-4 text-sm text-danger" role="alert">
+          {dict.book.pickDateTime}
+        </p>
       ) : null}
 
       {/* Actions */}
@@ -575,8 +589,8 @@ export function BookingFlow({
           <button
             type="button"
             onClick={next}
-            disabled={!canNext}
-            className="min-h-14 flex-1 cursor-pointer rounded-full bg-accent font-semibold text-white shadow-glow transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-40"
+            aria-disabled={!canNext}
+            className={`min-h-14 flex-1 cursor-pointer rounded-full bg-accent font-semibold text-white shadow-glow transition hover:bg-accent-hover ${canNext ? "" : "opacity-60"}`}
           >
             {dict.book.next}
           </button>

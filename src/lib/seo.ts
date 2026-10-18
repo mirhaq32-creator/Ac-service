@@ -10,7 +10,7 @@ import { DEFAULT_LANG, type Lang } from "@/i18n/config";
 import { BUSINESS } from "@/lib/business";
 
 export function getSiteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://riyadhacservice.site").replace(
     /\/$/,
     ""
   );
@@ -47,12 +47,22 @@ export function pageMetadata(
       siteName: BUSINESS.name,
       locale: lang === "ar" ? "ar_SA" : "en_US",
       type: "website",
+      images: [
+        {
+          url: `${site}/og-default.png`,
+          width: 1200,
+          height: 630,
+          alt: lang === "ar" ? "للتبريد والتكييف — خدمات التكييف والثلاجات في الرياض" : "AC and refrigerator repair services in Riyadh",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: opts.title,
       description: opts.description,
+      images: [`${site}/og-default.png`],
     },
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
     ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION
       ? { verification: { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION } }
       : {}),
