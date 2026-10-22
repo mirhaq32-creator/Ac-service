@@ -37,7 +37,7 @@ type Props = {
 
 /**
  * Public root layout for Arabic (RTL) and English (LTR) pages.
- * Google Ads tag is loaded on both language routes.
+ * Google Ads global tag is loaded on both language routes.
  */
 export default async function PublicRootLayout({
   children,
@@ -75,18 +75,20 @@ export default async function PublicRootLayout({
       <body className="flex min-h-full flex-col">
         {/* Google Ads Global Site Tag */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-18515639131"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18518996935"
           strategy="afterInteractive"
         />
+
         <Script id="google-ads-tag" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){window.dataLayer.push(arguments);}
             window.gtag = gtag;
             gtag('js', new Date());
-            gtag('config', 'AW-18515639131');
+            gtag('config', 'AW-18518996935');
           `}
         </Script>
+
         <JsonLd data={localBusinessJsonLd(getSiteUrl())} />
 
         <a
