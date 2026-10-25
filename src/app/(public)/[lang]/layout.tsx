@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { notFound } from "next/navigation";
@@ -35,10 +36,6 @@ type Props = {
   params: Promise<{ lang: string }>;
 };
 
-/**
- * Public root layout for Arabic (RTL) and English (LTR) pages.
- * Google Ads global tag is loaded on both language routes.
- */
 export default async function PublicRootLayout({
   children,
   params,
@@ -73,7 +70,6 @@ export default async function PublicRootLayout({
   return (
     <html lang={lang} dir={dir} className={`${fontVars} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        {/* Google Ads Global Site Tag */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=AW-18518996935"
           strategy="afterInteractive"
@@ -86,6 +82,46 @@ export default async function PublicRootLayout({
             window.gtag = gtag;
             gtag('js', new Date());
             gtag('config', 'AW-18518996935');
+          `}
+        </Script>
+
+        <Script id="google-ads-phone-click" strategy="afterInteractive">
+          {`
+            (function () {
+              if (window.__phoneClickTrackingInstalled) return;
+              window.__phoneClickTrackingInstalled = true;
+
+              document.addEventListener('click', function (event) {
+                var target = event.target;
+                if (!(target instanceof Element)) return;
+
+                var link = target.closest('a[href^="tel:"]');
+                if (!link) return;
+
+                if (link.dataset.googleAdsTracking === 'pending') return;
+
+                var href = link.href;
+                if (typeof window.gtag !== 'function') return;
+
+                event.preventDefault();
+                link.dataset.googleAdsTracking = 'pending';
+
+                var navigated = false;
+                function continueToCall() {
+                  if (navigated) return;
+                  navigated = true;
+                  window.location.href = href;
+                }
+
+                window.gtag('event', 'conversion', {
+                  send_to: 'AW-18518996935/9gnqCOOhkakdEMfvxf5E',
+                  event_callback: continueToCall,
+                  event_timeout: 1500
+                });
+
+                window.setTimeout(continueToCall, 1800);
+              }, true);
+            })();
           `}
         </Script>
 
