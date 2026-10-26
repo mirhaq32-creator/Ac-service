@@ -16,6 +16,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { IntroCurtain } from "@/components/motion/IntroCurtain";
+import { GoogleAdsPhoneClickTracking } from "@/components/analytics/GoogleAdsPhoneClickTracking";
 
 import "../../globals.css";
 
@@ -70,6 +71,7 @@ export default async function PublicRootLayout({
   return (
     <html lang={lang} dir={dir} className={`${fontVars} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        {/* Google Ads Global Site Tag */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=AW-18518996935"
           strategy="afterInteractive"
@@ -85,45 +87,8 @@ export default async function PublicRootLayout({
           `}
         </Script>
 
-        <Script id="google-ads-phone-click" strategy="afterInteractive">
-          {`
-            (function () {
-              if (window.__phoneClickTrackingInstalled) return;
-              window.__phoneClickTrackingInstalled = true;
-
-              document.addEventListener('click', function (event) {
-                var target = event.target;
-                if (!(target instanceof Element)) return;
-
-                var link = target.closest('a[href^="tel:"]');
-                if (!link) return;
-
-                if (link.dataset.googleAdsTracking === 'pending') return;
-
-                var href = link.href;
-                if (typeof window.gtag !== 'function') return;
-
-                event.preventDefault();
-                link.dataset.googleAdsTracking = 'pending';
-
-                var navigated = false;
-                function continueToCall() {
-                  if (navigated) return;
-                  navigated = true;
-                  window.location.href = href;
-                }
-
-                window.gtag('event', 'conversion', {
-                  send_to: 'AW-18518996935/9gnqCOOhkakdEMfvxf5E',
-                  event_callback: continueToCall,
-                  event_timeout: 1500
-                });
-
-                window.setTimeout(continueToCall, 1800);
-              }, true);
-            })();
-          `}
-        </Script>
+        {/* Track clicks on phone number links */}
+        <GoogleAdsPhoneClickTracking />
 
         <JsonLd data={localBusinessJsonLd(getSiteUrl())} />
 
