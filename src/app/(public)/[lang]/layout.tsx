@@ -73,7 +73,7 @@ export default async function PublicRootLayout({
       <body className="flex min-h-full flex-col">
         {/* Google Ads Global Site Tag */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-18518996935"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18548937429"
           strategy="afterInteractive"
         />
 
@@ -83,7 +83,7 @@ export default async function PublicRootLayout({
             function gtag(){window.dataLayer.push(arguments);}
             window.gtag = gtag;
             gtag('js', new Date());
-            gtag('config', 'AW-18518996935');
+            gtag('config', 'AW-18548937429');
           `}
         </Script>
 
