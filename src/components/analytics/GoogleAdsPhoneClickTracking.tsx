@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect } from "react";
@@ -49,15 +48,17 @@ export function GoogleAdsPhoneClickTracking() {
         window.location.href = phoneUrl;
       };
 
-      // Open the phone link even if Google does not call back.
+      // Fallback if Google does not call back.
       const fallback = window.setTimeout(openPhone, 1000);
 
       window.gtag("event", "conversion", {
-        send_to: "AW-18518996935/RczBCMuktKodEMfvxf5E",
+        send_to: "AW-18548937429/IOFiCP3FrLIdENWl6YxF",
+
         event_callback: () => {
           window.clearTimeout(fallback);
           openPhone();
         },
+
         event_timeout: 800,
       });
     };
