@@ -16,7 +16,6 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { IntroCurtain } from "@/components/motion/IntroCurtain";
-import { GoogleAdsPhoneClickTracking } from "@/components/analytics/GoogleAdsPhoneClickTracking";
 
 import "../../globals.css";
 
@@ -70,25 +69,26 @@ export default async function PublicRootLayout({
 
   return (
     <html lang={lang} dir={dir} className={`${fontVars} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">
-        {/* Google Ads Global Site Tag */}
+      <head>
+        {/* New Google Tag Manager */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-18548937429"
+          id="google-tag-manager"
+          src="https://www.googletagmanager.com/gtm.js?id=GTM-WDVS4T62"
           strategy="afterInteractive"
         />
+      </head>
 
-        <Script id="google-ads-tag" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){window.dataLayer.push(arguments);}
-            window.gtag = gtag;
-            gtag('js', new Date());
-            gtag('config', 'AW-18548937429');
-          `}
-        </Script>
-
-        {/* Track clicks on phone number links */}
-        <GoogleAdsPhoneClickTracking />
+      <body className="flex min-h-full flex-col">
+        {/* Google Tag Manager fallback */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-WDVS4T62"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+            title="Google Tag Manager"
+          />
+        </noscript>
 
         <JsonLd data={localBusinessJsonLd(getSiteUrl())} />
 
